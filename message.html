@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chemistry: The Haber-Bosch Process</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as an interactive, tab-based dashboard to analyze the Haber-Bosch process. This structure was chosen over a linear document format to allow for focused, non-linear exploration. Users can immediately access the part of the analysis that interests them most—be it the core reaction, the electron flow, the quantitative aspects, or the societal impact. The key interactions are the tab navigation to switch contexts and a fully interactive stoichiometry calculator. This design enhances usability by breaking down a complex topic into digestible, self-contained, yet interconnected sections, facilitating a deeper understanding of the chemical system as a whole. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Main balanced reaction -> Goal: Inform -> Presentation: Large, styled HTML text -> Interaction: Static display for clarity -> Justification: The core equation needs to be immediately recognizable and clear.
+        - Report Info: Electron flow/Redox -> Goal: Explain -> Presentation: HTML/Tailwind diagram -> Interaction: Highlighting key terms on hover -> Justification: A custom HTML layout provides more flexibility than a static image and avoids SVG, clearly showing oxidation state changes.
+        - Report Info: Stoichiometry problem -> Goal: Explore relationships -> Presentation: Interactive calculator with input fields and dynamic text output + Bar Chart -> Interaction: User inputs mass, app calculates and visualizes results -> Justification: Transforms a static problem into an engaging, hands-on tool. The Chart.js bar chart provides immediate visual feedback on the concept of a limiting reactant. Library: Chart.js.
+        - Report Info: Real-world impact -> Goal: Connect & Contextualize -> Presentation: Text summary + Donut Chart -> Interaction: Hover tooltips on chart -> Justification: A donut chart is a simple, effective way to visualize a key statistic (dependence on fertilizers), making the impact tangible. Library: Chart.js.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-btn.active {
+            border-color: #2563EB;
+            background-color: #2563EB;
+            color: white;
+        }
+        .equation {
+            font-family: 'Courier New', Courier, monospace;
+            letter-spacing: 1px;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Uncovering Reactions: The Haber-Bosch Process</h1>
+            <p class="mt-2 text-lg text-slate-600">An interactive exploration of a world-changing industrial chemical system.</p>
+        </header>
+
+        <main>
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+
+                <section id="intro" class="mb-8">
+                    <h2 class="text-2xl font-bold mb-3 text-slate-900">The Heart of Modern Agriculture</h2>
+                    <p class="text-slate-700 leading-relaxed">
+                        The Haber-Bosch process, developed in the early 20th century, is one of the most significant inventions in industrial chemistry. It "fixes" atmospheric nitrogen ($N_2$) by reacting it with hydrogen ($H_2$) to produce ammonia ($NH_3$), a critical component of artificial fertilizers. This single process is credited with sustaining a significant portion of the global population. This interactive guide breaks down the core chemistry of the system, allowing you to explore its reaction, electron flow, quantitative relationships, and profound real-world impact.
+                    </p>
+                </section>
+
+                <div class="mb-6 border-b border-slate-200">
+                    <nav class="-mb-px flex flex-wrap gap-2 md:gap-4" id="tab-nav">
+                        <button data-tab="tab1" class="tab-btn active text-sm md:text-base font-medium whitespace-nowrap py-3 px-4 border-b-2 border-transparent rounded-t-lg hover:bg-slate-100 hover:text-blue-600 transition-colors">Reaction Breakdown</button>
+                        <button data-tab="tab2" class="tab-btn text-sm md:text-base font-medium whitespace-nowrap py-3 px-4 border-b-2 border-transparent rounded-t-lg hover:bg-slate-100 hover:text-blue-600 transition-colors">Redox Analysis</button>
+                        <button data-tab="tab3" class="tab-btn text-sm md:text-base font-medium whitespace-nowrap py-3 px-4 border-b-2 border-transparent rounded-t-lg hover:bg-slate-100 hover:text-blue-600 transition-colors">Stoichiometry Calculator</button>
+                        <button data-tab="tab4" class="tab-btn text-sm md:text-base font-medium whitespace-nowrap py-3 px-4 border-b-2 border-transparent rounded-t-lg hover:bg-slate-100 hover:text-blue-600 transition-colors">Real-World Impact</button>
+                    </nav>
+                </div>
+
+                <div id="tab-content">
+                    <div id="tab1" class="tab-pane">
+                        <h3 class="text-xl font-semibold mb-4">The Core Equation</h3>
+                        <p class="mb-6 text-slate-700">The Haber-Bosch process is fundamentally a synthesis reaction where nitrogen and hydrogen gas combine. It is also a redox reaction, as the oxidation states of both nitrogen and hydrogen change. The process requires high temperatures (around 400-450°C), high pressures (around 150-200 atm), and an iron-based catalyst to proceed at a viable rate. This section shows the balanced chemical equation that defines the entire system.</p>
+                        <div class="bg-slate-100 rounded-lg p-6 text-center">
+                            <p class="equation text-lg md:text-2xl font-semibold text-slate-800">
+                                N<sub class="text-sm md:text-lg">2</sub>(g) + 3H<sub class="text-sm md:text-lg">2</sub>(g) <span class="mx-2">&#8652;</span> 2NH<sub class="text-sm md:text-lg">3</sub>(g)
+                            </p>
+                            <div class="mt-4 flex flex-wrap justify-center gap-4">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Synthesis</span>
+                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Redox</span>
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Gas Phase</span>
+                                <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded-full">Exothermic</span>
+                            </div>
+                        </div>
+                         <div class="mt-6 text-slate-700">
+                            <p>Because all reactants and products are gases, a net ionic equation is not applicable in the traditional sense, as there are no free-moving ions in an aqueous solution to be spectator ions. The entire reaction involves covalent molecules undergoing chemical change.</p>
+                        </div>
+                    </div>
+
+                    <div id="tab2" class="tab-pane hidden">
+                        <h3 class="text-xl font-semibold mb-4">Electron Transfer: Oxidation & Reduction</h3>
+                        <p class="mb-6 text-slate-700">A redox reaction is defined by the transfer of electrons, which causes a change in the oxidation states of the participating elements. In this process, nitrogen is reduced (it gains electrons) and hydrogen is oxidized (it loses electrons). This section details this electron flow, identifying the oxidizing and reducing agents that drive the synthesis of ammonia.</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-slate-100 rounded-lg p-6">
+                                <h4 class="font-semibold text-lg mb-2">Nitrogen: The Oxidizing Agent</h4>
+                                <p class="text-slate-600 mb-4">Nitrogen's oxidation state goes from 0 to -3. It gains electrons, so it is <span class="font-semibold text-blue-700">reduced</span>.</p>
+                                <p class="equation text-2xl text-center">N <span class="mx-2">&#8594;</span> N<sup>3-</sup></p>
+                            </div>
+                            <div class="bg-slate-100 rounded-lg p-6">
+                                <h4 class="font-semibold text-lg mb-2">Hydrogen: The Reducing Agent</h4>
+                                <p class="text-slate-600 mb-4">Hydrogen's oxidation state goes from 0 to +1. It loses electrons, so it is <span class="font-semibold text-red-700">oxidized</span>.</p>
+                                <p class="equation text-2xl text-center">H <span class="mx-2">&#8594;</span> H<sup>+</sup></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab3" class="tab-pane hidden">
+                        <h3 class="text-xl font-semibold mb-4">Interactive Stoichiometry Calculator</h3>
+                         <p class="mb-6 text-slate-700">Stoichiometry allows us to calculate the amounts of reactants and products in a chemical reaction. In any real process, one reactant will run out first—this is the limiting reactant, and it determines the maximum amount of product (theoretical yield) that can be formed. Use this calculator to see how different starting amounts of nitrogen and hydrogen affect the production of ammonia and to identify the limiting reactant.</p>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="n2_mass" class="block text-sm font-medium text-slate-700">Mass of Nitrogen ($N_2$) in grams</label>
+                                        <input type="number" id="n2_mass" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="e.g., 100">
+                                    </div>
+                                    <div>
+                                        <label for="h2_mass" class="block text-sm font-medium text-slate-700">Mass of Hydrogen ($H_2$) in grams</label>
+                                        <input type="number" id="h2_mass" class="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2" placeholder="e.g., 30">
+                                    </div>
+                                    <button id="calculate-btn" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Calculate Yield</button>
+                                </div>
+                                <div id="results" class="mt-6 space-y-2 text-slate-700 p-4 bg-slate-100 rounded-lg">
+                                    <p><strong>Limiting Reactant:</strong> <span id="limiting-reactant-result" class="font-mono text-blue-700">--</span></p>
+                                    <p><strong>Theoretical Yield of NH<sub>3</sub>:</strong> <span id="yield-result" class="font-mono text-green-700">--</span> g</p>
+                                    <p><strong>Excess Reactant Remaining:</strong> <span id="excess-result" class="font-mono text-orange-700">--</span> g</p>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="chart-container">
+                                    <canvas id="stoichiometryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tab4" class="tab-pane hidden">
+                        <h3 class="text-xl font-semibold mb-4">Global Impact and Significance</h3>
+                        <p class="mb-6 text-slate-700">The ability to synthesize ammonia on an industrial scale revolutionized agriculture and has had a profound, direct impact on human population growth. The fertilizers produced from Haber-Bosch ammonia are estimated to be responsible for feeding about half of the world's population. This section explores this impact and presents a visualization of its scale.</p>
+                        <div class="grid md:grid-cols-2 gap-8 items-center">
+                            <div class="text-slate-700 leading-relaxed">
+                                <p>Without artificial fertilizers, global crop yields would be drastically lower, leading to widespread food shortages. The Haber-Bosch process provides the necessary nitrogen that plants need to grow but cannot obtain directly from the air. However, the process is also energy-intensive, consuming about 1-2% of the world's annual energy supply, and is a significant source of greenhouse gas emissions, presenting an ongoing challenge for sustainable technology.</p>
+                            </div>
+                            <div class="chart-container h-64 md:h-80">
+                                <canvas id="impactChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <section id="student-info" class="mt-12 pt-6 border-t border-slate-200">
+                    <h2 class="text-2xl font-bold mb-3 text-slate-900">Student Information</h2>
+                    <div class="bg-slate-100 rounded-lg p-6 text-slate-700">
+                        <p><strong>Name:</strong> Osama Abdulrazaq Alabdulrazaq</p>
+                        <p><strong>Group:</strong> 3</p>
+                        <p><strong>Level:</strong> 2</p>
+                        <p><strong>Grade:</strong> 11</p>
+                        <p><strong>Email:</strong> os2017ab@gmail.com</p>
+                    </div>
+                </section>
+
+                <section id="sources-section" class="mt-8 pt-6 border-t border-slate-200">
+                    <h2 class="text-2xl font-bold mb-3 text-slate-900">Sources</h2>
+                    <div class="bg-slate-100 rounded-lg p-6 text-slate-700 leading-relaxed">
+                        <p>Erisman, J. W., et al. (2008). How a century of ammonia synthesis changed the world. Nature Geoscience, 1(10), 636-639.</p>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+
+        <footer class="text-center mt-8 text-slate-500 text-sm">
+            <p>Interactive Chemistry Dashboard | Created for Educational Purposes</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+            const tabNav = document.getElementById('tab-nav');
+
+            tabNav.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const targetTab = e.target.dataset.tab;
+
+                    tabs.forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+
+                    tabPanes.forEach(pane => {
+                        if (pane.id === targetTab) {
+                            pane.classList.remove('hidden');
+                        } else {
+                            pane.classList.add('hidden');
+                        }
+                    });
+                }
+            });
+
+            const MOLAR_MASS_N2 = 28.014;
+            const MOLAR_MASS_H2 = 2.016;
+            const MOLAR_MASS_NH3 = 17.031;
+
+            const calculateBtn = document.getElementById('calculate-btn');
+            const n2MassInput = document.getElementById('n2_mass');
+            const h2MassInput = document.getElementById('h2_mass');
+            const limitingReactantResult = document.getElementById('limiting-reactant-result');
+            const yieldResult = document.getElementById('yield-result');
+            const excessResult = document.getElementById('excess-result');
+            
+            let stoichiometryChart;
+            
+            function createOrUpdateStoichiometryChart(n2Mass = 0, h2Mass = 0, nh3Mass = 0) {
+                const ctx = document.getElementById('stoichiometryChart').getContext('2d');
+                const data = {
+                    labels: ['Nitrogen (N₂)', 'Hydrogen (H₂)', 'Ammonia (NH₃)'],
+                    datasets: [{
+                        label: 'Mass (g)',
+                        data: [n2Mass, h2Mass, nh3Mass],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(239, 68, 68, 0.6)',
+                            'rgba(22, 163, 74, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(239, 68, 68, 1)',
+                            'rgba(22, 163, 74, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+
+                if (stoichiometryChart) {
+                    stoichiometryChart.data.datasets[0].data = [n2Mass, h2Mass, nh3Mass];
+                    stoichiometryChart.update();
+                } else {
+                    stoichiometryChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Reactant vs. Product Mass'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Mass (g)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+            
+            calculateBtn.addEventListener('click', () => {
+                const n2Mass = parseFloat(n2MassInput.value) || 0;
+                const h2Mass = parseFloat(h2MassInput.value) || 0;
+
+                if (n2Mass <= 0 || h2Mass <= 0) {
+                     limitingReactantResult.textContent = 'Enter positive values';
+                     yieldResult.textContent = '--';
+                     excessResult.textContent = '--';
+                     createOrUpdateStoichiometryChart(n2Mass, h2Mass, 0);
+                     return;
+                }
+                
+                const n2Moles = n2Mass / MOLAR_MASS_N2;
+                const h2Moles = h2Mass / MOLAR_MASS_H2;
+
+                const n2MolesNeededForH2 = h2Moles / 3;
+                
+                let limitingReactant, nh3YieldMass, excessMass;
+
+                if (n2Moles < n2MolesNeededForH2) {
+                    limitingReactant = 'Nitrogen (N₂)';
+                    const nh3MolesProduced = n2Moles * 2;
+                    nh3YieldMass = nh3MolesProduced * MOLAR_MASS_NH3;
+                    const h2MolesUsed = n2Moles * 3;
+                    const h2MassUsed = h2MolesUsed * MOLAR_MASS_H2;
+                    excessMass = h2Mass - h2MassUsed;
+                    excessResult.textContent = `${excessMass.toFixed(2)} g of Hydrogen (H₂)`;
+                } else {
+                    limitingReactant = 'Hydrogen (H₂)';
+                    const nh3MolesProduced = h2Moles * (2 / 3);
+                    nh3YieldMass = nh3MolesProduced * MOLAR_MASS_NH3;
+                    const n2MolesUsed = h2Moles / 3;
+                    const n2MassUsed = n2MolesUsed * MOLAR_MASS_N2;
+                    excessMass = n2Mass - n2MassUsed;
+                    excessResult.textContent = `${excessMass.toFixed(2)} g of Nitrogen (N₂)`;
+                }
+
+                limitingReactantResult.textContent = limitingReactant;
+                yieldResult.textContent = `${nh3YieldMass.toFixed(2)}`;
+                
+                createOrUpdateStoichiometryChart(n2Mass, h2Mass, nh3YieldMass);
+            });
+            
+            const impactCtx = document.getElementById('impactChart').getContext('2d');
+            new Chart(impactCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Food supply reliant on Haber-Bosch', 'Other'],
+                    datasets: [{
+                        data: [50, 50],
+                        backgroundColor: [
+                            'rgba(22, 163, 74, 0.7)',
+                            'rgba(203, 213, 225, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(22, 163, 74, 1)',
+                            'rgba(203, 213, 225, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Global Food Supply Dependency (%)'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            createOrUpdateStoichiometryChart();
+        });
+    </script>
+
+</body>
+</html>
